@@ -212,6 +212,7 @@ class PeliculaDetalle extends StatelessWidget {
     FlutterYoutube.playYoutubeVideoById(
       apiKey: "<API_KEY>",
       videoId: video.key,
+      autoPlay: true
       //videoUrl: "https://www.youtube.com/watch?v=wgTBLj7rMPM",
     );
   }
