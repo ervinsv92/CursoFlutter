@@ -2,14 +2,17 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
+import 'package:peliculas/src/models/actores_model.dart';
 import 'dart:convert';
 import 'package:peliculas/src/models/pelicula_model.dart';
+import 'package:peliculas/src/models/video_model.dart';
 
 class PeliculasProvider{
   String _apiKey = 'c22b82a36dcf8cdc84e5c80e1617a55e';
   String _url = 'api.themoviedb.org';
   String _languaje = 'es-ES';
   int _popularesPage = 0;
+  bool _cargando = false;
 
   List<Pelicula> _populares = new List();
 
@@ -47,6 +50,11 @@ class PeliculasProvider{
 
   Future<List<Pelicula>> getPopulares() async{
 
+    //Se hace para que no tome parte del final del scroll y llame varias veces la misma petición
+    if(_cargando) return [];
+
+    _cargando=true;
+
     _popularesPage++;
 
     final url = Uri.https(_url, '3/movie/popular', {
@@ -59,7 +67,45 @@ class PeliculasProvider{
 
     _populares.addAll(resp);
     popularesSink(_populares);
+    _cargando = false;
 
     return resp;
+  }
+
+  Future<List<Actor>> getCast(String peliId) async{
+    final url = Uri.https(_url, '3/movie/$peliId/credits', {
+      'api_key'   : _apiKey,
+      'languaje'  : _languaje,
+    });
+
+    final resp = await http.get(url);
+    final decodedData = json.decode(resp.body);
+
+    final cast = new Cast.fromJsonList(decodedData['cast']);
+    return cast.actores;
+  }
+
+  Future<List<Video>> getVideos(String peliId) async{
+    final url = Uri.https(_url, '3/movie/$peliId/videos', {
+      'api_key'   : _apiKey,
+      'languaje'  : _languaje,
+    });
+
+    final resp = await http.get(url);
+    final decodedData = json.decode(resp.body);
+
+    final videos = new Videos.fromJsonList(decodedData['results']);
+    return videos.videos;
+  }
+
+  Future<List<Pelicula>> buscarPelicula(String query) async{
+    
+    final url = Uri.https(_url, '3/search/movie', {
+      'api_key'   : _apiKey,
+      'languaje'  : _languaje,
+      'query'     : query
+    });
+
+    return await _procesarRespuesta(url);
   }
 }
