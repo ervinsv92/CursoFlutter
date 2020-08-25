@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:path/path.dart';
-import 'package:qrreaderapp/src/models/scan_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-
-import '../../../../../src/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-1.3.1/lib/sqflite.dart';
+import 'package:qrreaderapp/src/models/scan_model.dart';
+export 'package:qrreaderapp/src/models/scan_model.dart';
 
 class DBProvider{
   static Database _database;
@@ -88,4 +87,16 @@ class DBProvider{
     return res;
   }
 
+  Future<int> deleteScan(int id) async{
+    final db  = await database;
+    final res = await db.delete('Scans', where: 'id = ?', whereArgs: [id]);
+    return res;
+  }
+
+  //Otra forma de eliminar
+  Future<int> deleteAll() async{
+    final db  = await database;
+    final res = await db.rawDelete('DELETE FROM Scans');
+    return res;
+  }
 }
